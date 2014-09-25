@@ -315,7 +315,6 @@ class ElasticSearchQueryBuilder implements QueryBuilderInterface, ProtectedConte
 		$timeBefore = microtime(TRUE);
 		$response = $this->elasticSearchClient->getIndex()->request('GET', '/_search', array(), json_encode($this->request));
 		$timeAfterwards = microtime(TRUE);
-
 		$hits = $response->getTreatedContent()['hits'];
 
 		if ($this->logThisQuery === TRUE) {
@@ -379,7 +378,9 @@ class ElasticSearchQueryBuilder implements QueryBuilderInterface, ProtectedConte
 	 */
 	public function count() {
 		$timeBefore = microtime(TRUE);
-		$response = $this->elasticSearchClient->getIndex()->request('GET', '/_count', array(), json_encode($this->request));
+		$request = $this->request;
+		unset ($request['fields']);
+		$response = $this->elasticSearchClient->getIndex()->request('GET', '/_count', array(), json_encode($request));
 		$timeAfterwards = microtime(TRUE);
 
 		$count = $response->getTreatedContent()['count'];
@@ -422,7 +423,7 @@ class ElasticSearchQueryBuilder implements QueryBuilderInterface, ProtectedConte
 
 		//
 		// http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-terms-filter.html
-		$this->queryFilter('terms', array('__workspace' => array('live', $contextNode->getContext()->getWorkspace()->getName())));
+		$this->queryFilter('terms', array('__workspace' => array_unique(array('live', $contextNode->getContext()->getWorkspace()->getName()))));
 
 		$this->contextNode = $contextNode;
 
